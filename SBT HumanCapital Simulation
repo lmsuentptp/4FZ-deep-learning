@@ -1,0 +1,208 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def run_simulation(
+    N=100,
+    years=5,
+    evals_per_year=4,
+    skill_growth_rate=0.02,
+    skill_weight=0.6,
+    wellbeing_weight=0.4,
+    company_impact_multiplier=1.5,
+    random_seed=42
+):
+    """
+    Simulate the evolution of employees' human capital SBT scores and the company's
+    impact-weighted score over time.
+
+    Parameters:
+    -----------
+    N : int
+        Number of employees (agents).
+    years : int
+        Total number of years to simulate.
+    evals_per_year : int
+        Number of evaluation updates each year.
+    skill_growth_rate : float
+        Fraction by which skill score improves per evaluation cycle (e.g., 0.02 = 2%).
+    skill_weight : float
+        Weighting factor for skill in the individual SBT score.
+    wellbeing_weight : float
+        Weighting factor for well-being in the individual SBT score.
+    company_impact_multiplier : float
+        Multiplier that aggregates individual scores into an overall company SBT score.
+    random_seed : int
+        Seed for reproducible results.
+
+    Returns:
+    --------
+    time_points : list
+        List of discrete time steps (evaluation cycles).
+    avg_individual_scores : list
+        Average SBT score across all employees at each time step.
+    company_scores : list
+        Computed company impact-weighted score at each time step.
+    """
+
+    np.random.seed(random_seed)
+
+    # Initialize skill and well-being scores for all employees
+    skill_scores = np.random.normal(loc=50, scale=10, size=N)  # mean=50, std=10
+    wellbeing_scores = np.random.normal(loc=60, scale=8, size=N)  # mean=60, std=8
+
+    # Ensure no negative initial values
+    skill_scores = np.clip(skill_scores, 0, 100)
+    wellbeing_scores = np.clip(wellbeing_scores, 0, 100)
+
+    # Helper function to compute an individual's SBT score
+    def compute_individual_sbt(skill, wellbeing):
+        return skill_weight * skill + wellbeing_weight * wellbeing
+
+    # Lists to store results
+    time_points = []
+    avg_individual_scores = []
+    company_scores = []
+
+    total_cycles = years * evals_per_year
+    for cycle in range(total_cycles):
+        # Periodic updates: skill improvement + random variation
+        skill_improvement = skill_scores * skill_growth_rate
+        random_variation = np.random.normal(loc=0, scale=2, size=N)  # random noise
+
+        skill_scores += skill_improvement + random_variation
+        # Optional well-being changes (e.g., might also improve or fluctuate)
+        wellbeing_variation = np.random.normal(loc=0, scale=1.5, size=N)
+        wellbeing_scores += wellbeing_variation
+
+        # Clip scores to [0, 100]
+        skill_scores = np.clip(skill_scores, 0, 100)
+        wellbeing_scores = np.clip(wellbeing_scores, 0, 100)
+
+        # Compute each individual's updated SBT
+        individual_sbt_scores = [
+            compute_individual_sbt(skill_scores[i], wellbeing_scores[i])
+            for i in range(N)
+        ]
+
+        # Calculate average SBT score across employees
+        avg_score = np.mean(individual_sbt_scores)
+
+        # Company-level impact-weighted score
+        company_score = np.sum(individual_sbt_scores) * company_impact_multiplier
+
+        # Store results
+        time_points.append(cycle)
+        avg_individual_scores.append(avg_score)
+        company_scores.append(company_score)
+
+    return time_points, avg_individual_scores, company_scores
+
+def plot_results(time_points, avg_individual_scores, company_scores):
+    """Plot the average individual SBT scores and company impact-weighted score over time."""
+    plt.figure(figsize=(12,5))
+
+    # Plot average individual SBT scores
+    plt.subplot(1,2,1)
+    plt.plot(time_points, avg_individual_scores, label="Average Individual SBT Score")
+    plt.title("Average Individual SBT Score Over Time")
+    plt.xlabel("Evaluation Cycle")
+    plt.ylabel("Score")
+    plt.legend()
+
+    # Plot company impact-weighted score
+    plt.subplot(1,2,2)
+    plt.plot(time_points, company_scores, label="Company Impact Score", color='green')
+    plt.title("Company Impact-Weighted Score Over Time")
+    plt.xlabel("Evaluation Cycle")
+    plt.ylabel("Impact Score")
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+
+if __name__ == "__main__":
+    # Example usage with default parameters
+    t_points, avg_scores, comp_scores = run_simulation()
+    plot_results(t_points, avg_scores, comp_scores)
+import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Make sure plots render inline in Streamlit
+st.set_option('deprecation.showPyplotGlobalUse', False)
+
+def run_simulation(N, years, evals_per_year, skill_growth_rate, skill_weight, wellbeing_weight, company_impact_multiplier):
+    np.random.seed(42)
+    skill_scores = np.random.normal(loc=50, scale=10, size=N)
+    wellbeing_scores = np.random.normal(loc=60, scale=8, size=N)
+    skill_scores = np.clip(skill_scores, 0, 100)
+    wellbeing_scores = np.clip(wellbeing_scores, 0, 100)
+
+    def compute_individual_sbt(skill, wellbeing):
+        return skill_weight * skill + wellbeing_weight * wellbeing
+
+    total_cycles = int(years * evals_per_year)
+    avg_individual_scores = []
+    company_scores = []
+
+    for cycle in range(total_cycles):
+        skill_improvement = skill_scores * skill_growth_rate
+        random_var_skill = np.random.normal(loc=0, scale=2, size=N)
+        skill_scores += skill_improvement + random_var_skill
+
+        wellbeing_var = np.random.normal(loc=0, scale=1.5, size=N)
+        wellbeing_scores += wellbeing_var
+
+        skill_scores = np.clip(skill_scores, 0, 100)
+        wellbeing_scores = np.clip(wellbeing_scores, 0, 100)
+
+        individual_sbt_scores = [compute_individual_sbt(skill_scores[i], wellbeing_scores[i]) 
+                                 for i in range(N)]
+        avg_score = np.mean(individual_sbt_scores)
+        company_score = np.sum(individual_sbt_scores) * company_impact_multiplier
+
+        avg_individual_scores.append(avg_score)
+        company_scores.append(company_score)
+
+    return avg_individual_scores, company_scores
+
+# --- Streamlit UI ---
+
+st.title("Human Capital SBT Simulation (Interactive)")
+
+# Sidebar parameters
+N = st.sidebar.slider("Number of Employees", 10, 300, 100, step=10)
+years = st.sidebar.slider("Simulation Years", 1, 10, 5)
+evals_per_year = st.sidebar.slider("Evaluations per Year", 1, 12, 4)
+skill_growth_rate = st.sidebar.slider("Skill Growth Rate", 0.0, 0.1, 0.02, 0.01)
+skill_weight = st.sidebar.slider("Skill Weight", 0.0, 1.0, 0.6, 0.1)
+wellbeing_weight = st.sidebar.slider("Well-Being Weight", 0.0, 1.0, 0.4, 0.1)
+company_impact_multiplier = st.sidebar.slider("Company Impact Multiplier", 0.5, 3.0, 1.5, 0.1)
+
+avg_individual_scores, company_scores = run_simulation(
+    N=N,
+    years=years,
+    evals_per_year=evals_per_year,
+    skill_growth_rate=skill_growth_rate,
+    skill_weight=skill_weight,
+    wellbeing_weight=wellbeing_weight,
+    company_impact_multiplier=company_impact_multiplier
+)
+
+# Plotting
+st.subheader("Average Individual SBT Score Over Time")
+plt.figure(figsize=(10,4))
+plt.plot(avg_individual_scores, label="Average SBT Score")
+plt.xlabel("Evaluation Cycle")
+plt.ylabel("Score")
+plt.legend()
+st.pyplot()
+
+st.subheader("Company Impact Score Over Time")
+plt.figure(figsize=(10,4))
+plt.plot(company_scores, color='green', label="Company Impact Score")
+plt.xlabel("Evaluation Cycle")
+plt.ylabel("Impact Score")
+plt.legend()
+st.pyplot()
