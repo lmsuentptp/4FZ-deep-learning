@@ -4,17 +4,17 @@ This repository contains research notebooks developed as part of my work at Keio
 
 ## 📘 Projects Overview
 
+- **Weekly Notebooks**  
+  Iterative development of deep learning techniques applied to ESG metrics, financial data, and portfolio analysis.
+  
+- **Carbon Credits Market**  
+  Exploratory analysis and deep learning models on carbon credit pricing mechanisms and sustainability-linked assets.
+  
 - **SBT HumanCapital Simulation**  
   Agent-based simulation modeling tokenized human capital funding using Soulbound Tokens (SBTs) for education finance and labor market alignment.
 
-- **Carbon Credits Market (Week 5–6)**  
-  Exploratory analysis and deep learning models on carbon credit pricing mechanisms and sustainability-linked assets.
-
 - **ESG Portfolio Optimization**  
   ESG signal extraction using NLP (BERT) on annual reports, with portfolio construction and performance evaluation.
-
-- **Weekly Notebooks (Weeks 1–4)**  
-  Iterative development of deep learning techniques applied to ESG metrics, financial data, and portfolio analysis.
 
 ## 🔧 Tools & Libraries
 - Python, NumPy, Pandas, Scikit-learn, PyTorch, TensorFlow, BERT
